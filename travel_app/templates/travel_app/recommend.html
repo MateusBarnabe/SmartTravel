@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartTravel • Protótipo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f7fb;
+        }
+        .hero {
+            background: linear-gradient(120deg, #0077b6, #00b4d8);
+            color: #fff;
+            padding: 3rem 2rem;
+            border-radius: 1.25rem;
+        }
+        .score-badge { font-size: 1.1rem; font-weight: 600; }
+        .result-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        .description-card {
+            background: #f8fafc;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .detail-pill {
+            background: #ecf2ff;
+            border-radius: 0.75rem;
+            padding: 0.85rem;
+        }
+        .match-description {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="hero mb-5 text-center text-md-start">
+            <h1 class="display-6 fw-semibold mb-3">SmartTravel</h1>
+            <p class="lead mb-0">
+                Um protótipo inteligente que combina IA e suas preferências para sugerir os destinos perfeitos.
+                Ajuste os filtros, selecione meses favoritos e descubra o seu próximo destino ideal.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h2 class="h5 mb-4">Personalize sua viagem</h2>
+                        <form method="post" class="d-grid gap-3">
+                            {% csrf_token %}
+
+                            <div>
+                                <label class="form-label">Temperatura alvo (°C)</label>
+                                <input type="number" step="0.1" class="form-control" name="temp_target" value="{{ request.POST.temp_target }}">
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Chuva (0-3)</label>
+                                    <input type="number" min="0" max="3" class="form-control" name="chuva_preference" value="{{ request.POST.chuva_preference }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Neve (0-2)</label>
+                                    <input type="number" min="0" max="2" class="form-control" name="neve_preference" value="{{ request.POST.neve_preference }}">
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Montanha (0/1)</label>
+                                    <input type="number" min="0" max="1" class="form-control" name="quer_montanha" value="{{ request.POST.quer_montanha }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">História (0/1)</label>
+                                    <input type="number" min="0" max="1" class="form-control" name="gosta_historia" value="{{ request.POST.gosta_historia }}">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Budget (0=baixo, 1=médio, 2=alto)</label>
+                                <input type="number" min="0" max="2" class="form-control" name="budget_target" value="{{ request.POST.budget_target }}">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Meses preferidos</label>
+                                <div class="row gy-2">
+                                    {% for mes in months %}
+                                        <div class="col-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="months" value="{{ mes }}" id="mes-{{ forloop.counter }}" {% if mes in selected_months %}checked{% endif %}>
+                                                <label class="form-check-label" for="mes-{{ forloop.counter }}">{{ mes }}</label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary btn-lg mt-3">Gerar recomendações</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="d-flex flex-column h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Top destinos sugeridos</h2>
+                        </div>
+                        {% if results %}
+                            <span class="badge text-bg-success">2 melhores</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">Aguardando filtros</span>
+                        {% endif %}
+                    </div>
+
+                    {% if results %}
+                        <div class="row g-4">
+                            {% for r in results %}
+                                <div class="col-12">
+                                    <div class="card result-card">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h3 class="h4 mb-1">{{ r.cidade }}</h3>
+                                                    <span class="text-muted">{{ r.pais }} • {{ r.mes }}</span>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-primary score-badge">Score {{ r.score|floatformat:3 }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row g-3 text-center">
+                                                <div class="col-6 col-md-3">
+                                                    <div class="detail-pill h-100">
+                                                        <small class="text-uppercase text-muted">Temperatura</small>
+                                                        <p class="mb-0 fw-semibold">{{ r.temp_min }}° / {{ r.temp_max }}°</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="detail-pill h-100">
+                                                        <small class="text-uppercase text-muted">Chuva</small>
+                                                        <p class="mb-0 fw-semibold">{{ r.chuva }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="detail-pill h-100">
+                                                        <small class="text-uppercase text-muted">Neve</small>
+                                                        <p class="mb-0 fw-semibold">{{ r.neve }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="detail-pill h-100">
+                                                        <small class="text-uppercase text-muted">Custo</small>
+                                                        <p class="mb-0 fw-semibold">{{ r.custo }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr class="my-4">
+
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge {% if r.tem_montanha %}text-bg-success{% else %}text-bg-light text-dark{% endif %}">
+                                                    {% if r.tem_montanha %}Tem montanhas{% else %}Sem montanha{% endif %}
+                                                </span>
+                                                <span class="badge {% if r.tem_historia %}text-bg-success{% else %}text-bg-light text-dark{% endif %}">
+                                                    {% if r.tem_historia %}Rica em história{% else %}História discreta{% endif %}
+                                                </span>
+                                                <span class="badge text-bg-info text-dark">Melhor mês: {{ r.mes }}</span>
+                                            </div>
+
+                                            <div class="description-card mt-4 p-3">
+                                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                                    <div>
+                                                        <small class="text-uppercase text-muted">Texto do destino</small>
+                                                        <p class="h6 mb-0">Por que {{ r.cidade }} combina com você</p>
+                                                    </div>
+                                                    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#descricao-{{ forloop.counter }}" aria-expanded="false">
+                                                        Ver descrição
+                                                    </button>
+                                                </div>
+                                                <div class="collapse mt-3" id="descricao-{{ forloop.counter }}">
+                                                    <p class="match-description mb-0">
+                                                        {{ r.descricao|default:"Ainda não temos descrição detalhada para este destino." }}
+                                                    </p>
+                                                    <div class="mt-4">
+                                                        <small class="text-uppercase text-muted d-block mb-2">Detalhes que você selecionou</small>
+                                                        <div class="row g-3">
+                                                            <div class="col-6 col-md-3">
+                                                                <div class="detail-pill text-start">
+                                                                    <small class="text-muted">Temp alvo</small>
+                                                                    <p class="mb-0 fw-semibold">{{ request.POST.temp_target|default:"-" }}°C</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6 col-md-3">
+                                                                <div class="detail-pill text-start">
+                                                                    <small class="text-muted">Chuva</small>
+                                                                    <p class="mb-0 fw-semibold">{{ request.POST.chuva_preference|default:"-" }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6 col-md-3">
+                                                                <div class="detail-pill text-start">
+                                                                    <small class="text-muted">Neve</small>
+                                                                    <p class="mb-0 fw-semibold">{{ request.POST.neve_preference|default:"-" }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6 col-md-3">
+                                                                <div class="detail-pill text-start">
+                                                                    <small class="text-muted">Budget</small>
+                                                                    <p class="mb-0 fw-semibold">{{ request.POST.budget_target|default:"-" }}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <div class="detail-pill text-start">
+                                                                    <small class="text-muted">Meses preferidos</small>
+                                                                    <p class="mb-0 fw-semibold">
+                                                                        {{ selected_months|join:", "|default:"Não selecionado" }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body text-center py-5">
+                                <p class="text-muted mb-2">Ainda sem recomendações.</p>
+                                <p class="mb-0">Selecione suas preferências ao lado e clique em “Gerar recomendações”.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
