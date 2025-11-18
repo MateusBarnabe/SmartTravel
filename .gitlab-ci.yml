@@ -1,0 +1,59 @@
+# Imagem base para os jobs de Python/Django
+image: python:3.12
+
+stages:
+  - test
+  - build
+
+# Cache simples de dependências
+cache:
+  paths:
+    - .venv/
+    - .cache/pip/
+
+# Variáveis opcionais
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DJANGO_SETTINGS_MODULE: "smarttravel.settings"
+
+# Job de TESTES (CI)
+test:
+  stage: test
+  before_script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    # Verifica se o Django está ok
+    - python manage.py check
+    # Se tiver testes, roda:
+    - python manage.py test
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Job de BUILD da imagem Docker (CD)
+build_docker:
+  stage: build
+  # Aqui usamos outra imagem, com Docker
+  image: docker:24
+  services:
+    - name: docker:24-dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_DRIVER: overlay2
+  before_script:
+    # Login no Container Registry do GitLab
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    # Build da imagem
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    # Tag "latest" para facilitar
+    - docker tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE:latest"
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+  only:
+    - main
