@@ -1,4 +1,4 @@
-# Tutorial para LEIGOS (burros) de como rodar o projeto com o Docker
+# Tutorial para LEIGOS de como rodar o projeto com o Docker
 
 1. Clonar o repositório.
 2. Construir e subir o containner:
