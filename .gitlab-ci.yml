@@ -14,7 +14,7 @@ cache:
 # Variáveis opcionais
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  DJANGO_SETTINGS_MODULE: "core_project.settings"
+  DJANGO_SETTINGS_MODULE: "smarttravel.settings"
 
 # Job de TESTES (CI)
 test:
