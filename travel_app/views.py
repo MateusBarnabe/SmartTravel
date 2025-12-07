@@ -1,8 +1,11 @@
+
 import logging
 from pathlib import Path
+import json
 
 import pandas as pd
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from .ml.travel_knn_assets import recommend_knn
 
@@ -47,45 +50,37 @@ def _city_description(pais, cidade):
     key = (str(pais).strip().lower(), str(cidade).strip().lower())
     return CITY_TEXTS.get(key, "")
 
-MONTHS = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-]
-
+@csrf_exempt
 def recommend_view(request):
-    results = None
-    selected_months = []
-
     if request.method == "POST":
-        temp_target      = request.POST.get("temp_target") or None
-        chuva_preference = request.POST.get("chuva_preference") or None
-        neve_preference  = request.POST.get("neve_preference") or None
-        quer_montanha    = request.POST.get("quer_montanha") or None
-        gosta_historia   = request.POST.get("gosta_historia") or None
-        budget_target    = request.POST.get("budget_target") or None
-        selected_months  = request.POST.getlist("months")
+        try:
+            data = json.loads(request.body)
+            temp_target = data.get("temp_target")
+            chuva_preference = data.get("chuva_preference")
+            neve_preference = data.get("neve_preference")
+            quer_montanha = data.get("quer_montanha")
+            gosta_historia = data.get("gosta_historia")
+            budget_target = data.get("budget_target")
+            selected_months = data.get("months")
 
-        payload = {
-            "temp_target": temp_target,
-            "chuva_preference": chuva_preference,
-            "neve_preference": neve_preference,
-            "quer_montanha": quer_montanha,
-            "gosta_historia": gosta_historia,
-            "budget_target": budget_target,
-            "months": selected_months,
-        }
+            payload = {
+                "temp_target": temp_target,
+                "chuva_preference": chuva_preference,
+                "neve_preference": neve_preference,
+                "quer_montanha": quer_montanha,
+                "gosta_historia": gosta_historia,
+                "budget_target": budget_target,
+                "months": selected_months,
+            }
 
-        results = recommend_knn(payload, top_k=10)
-        if results:
-            results = sorted(results, key=lambda r: r["score"], reverse=True)[:2]
-            for item in results:
-                item["descricao"] = _city_description(item.get("pais"), item.get("cidade"))
+            results = recommend_knn(payload, top_k=10)
+            if results:
+                results = sorted(results, key=lambda r: r["score"], reverse=True)[:2]
+                for item in results:
+                    item["descricao"] = _city_description(item.get("pais"), item.get("cidade"))
+            
+            return JsonResponse({"results": results})
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
     
-    context = {
-        "results": results,
-        "months": MONTHS,
-        "selected_months": selected_months,
-    }
-
-
-    return render(request, "travel_app/recommend.html", context)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
