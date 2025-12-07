@@ -32,11 +32,14 @@ def _to_opt_int(v):
     except:
         return None
 
-
 def _build_query_and_weights(payload: dict):
     feat_means = df[FEATS].mean().to_dict()
     q_vals = {f: feat_means[f] for f in FEATS}
     w_vals = {f: 0.0 for f in FEATS}
+
+    # Mapeamento de preferências de chuva e neve
+    chuva_map = {"pouca": 1, "muita": 3}
+    neve_map = {"pouca": 1, "muita": 2}
 
     # temp
     v = _to_opt_float(payload.get("temp_target"))
@@ -45,33 +48,41 @@ def _build_query_and_weights(payload: dict):
         w_vals["temp_media"] = 2.0
 
     # chuva (0..3)
-    v = _to_opt_int(payload.get("chuva_preference"))
+    v_str = payload.get("chuva_preference")
+    v = chuva_map.get(v_str)
     if v is not None and "chuva_level" in FEATS:
         q_vals["chuva_level"] = v
         w_vals["chuva_level"] = 1.0
 
     # neve (0..2)
-    v = _to_opt_int(payload.get("neve_preference"))
+    v_str = payload.get("neve_preference")
+    v = neve_map.get(v_str)
     if v is not None and "neve_level" in FEATS:
         q_vals["neve_level"] = v
         w_vals["neve_level"] = 2.0
 
     # montanha (0/1)
-    v = _to_opt_int(payload.get("quer_montanha"))
+    v = payload.get("quer_montanha")
     if v is not None and "montanha" in FEATS:
-        q_vals["montanha"] = v
+        q_vals["montanha"] = int(v)
         w_vals["montanha"] = 2.0
 
     # história (0/1)
-    v = _to_opt_int(payload.get("gosta_historia"))
+    v = payload.get("gosta_historia")
     if v is not None and "historia" in FEATS:
-        q_vals["historia"] = v
+        q_vals["historia"] = int(v)
         w_vals["historia"] = 1.0
 
     # custo (0..2)
-    v = _to_opt_int(payload.get("budget_target"))
+    v = _to_opt_float(payload.get("budget_target"))
     if v is not None and "custo_level" in FEATS:
-        q_vals["custo_level"] = v
+        if v < 1000:
+            custo_level = 0
+        elif v < 3000:
+            custo_level = 1
+        else:
+            custo_level = 2
+        q_vals["custo_level"] = custo_level
         w_vals["custo_level"] = 1.0
 
     if all(w == 0.0 for w in w_vals.values()):
@@ -93,7 +104,6 @@ def _build_query_and_weights(payload: dict):
         w = w / w.sum() * len(w)
 
     return qz, w
-
 
 def recommend_knn(payload: dict, top_k: int = 10):
     """
