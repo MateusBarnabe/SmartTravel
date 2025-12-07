@@ -3,7 +3,20 @@
 
 import { useState } from 'react';
 
-const questions = [
+interface Option {
+  label: string;
+  value: string;
+}
+
+interface Question {
+  id: string;
+  text: string;
+  type: 'number' | 'radio' | 'checkbox';
+  field: string;
+  options?: Option[];
+}
+
+const questions: Question[] = [
   { id: 'temp_target', text: 'Qual a sua temperatura ideal para viajar?', type: 'number', field: 'temp_target' },
   { id: 'budget_target', text: 'Qual o seu orçamento?', type: 'number', field: 'budget_target' },
   { id: 'chuva_preference', text: 'Você se importa com chuva?', type: 'radio', field: 'chuva_preference', options: [{label: 'Não', value: 'pouca'}, {label: 'Sim', value: 'muita'}]},
@@ -79,7 +92,7 @@ export default function Home() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               )}
-              {currentQuestion.type === 'radio' && currentQuestion.options && currentQuestion.options.map((option:any) => (
+              {currentQuestion.type === 'radio' && currentQuestion.options && currentQuestion.options.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleAnswer(currentQuestion.field, option.value)}
@@ -90,7 +103,7 @@ export default function Home() {
               ))}
               {currentQuestion.type === 'checkbox' && currentQuestion.options && (
                 <div className="grid grid-cols-3 gap-2">
-                  {currentQuestion.options.map((option: any) => (
+                  {currentQuestion.options.map((option) => (
                     <div key={option.value} className="flex items-center">
                       <input
                         type="checkbox"
