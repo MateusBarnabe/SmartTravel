@@ -11,8 +11,8 @@ const questions = [
   { id: 'quer_montanha', text: 'Gosta de montanhas?', type: 'radio', field: 'quer_montanha', options: [{label: 'Sim', value: 'true'}, {label: 'Não', value: 'false'}] },
   { id: 'gosta_historia', text: 'Gosta de história?', type: 'radio', field: 'gosta_historia', options: [{label: 'Sim', value: 'true'}, {label: 'Não', value: 'false'}] },
   { id: 'months', text: 'Quais meses você prefere viajar?', type: 'checkbox', field: 'months', options: [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+    {label: "Janeiro", value: "Janeiro"}, {label: "Fevereiro", value: "Fevereiro"}, {label: "Março", value: "Março"}, {label: "Abril", value: "Abril"}, {label: "Maio", value: "Maio"}, {label: "Junho", value: "Junho"},
+    {label: "Julho", value: "Julho"}, {label: "Agosto", value: "Agosto"}, {label: "Setembro", value: "Setembro"}, {label: "Outubro", value: "Outubro"}, {label: "Novembro", value: "Novembro"}, {label: "Dezembro", value: "Dezembro"},
   ]},
 ];
 
@@ -79,7 +79,7 @@ export default function Home() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               )}
-              {currentQuestion.type === 'radio' && currentQuestion.options && currentQuestion.options.map((option) => (
+              {currentQuestion.type === 'radio' && currentQuestion.options && currentQuestion.options.map((option:any) => (
                 <button
                   key={option.value}
                   onClick={() => handleAnswer(currentQuestion.field, option.value)}
@@ -91,23 +91,23 @@ export default function Home() {
               {currentQuestion.type === 'checkbox' && currentQuestion.options && (
                 <div className="grid grid-cols-3 gap-2">
                   {currentQuestion.options.map((option: any) => (
-                    <div key={option} className="flex items-center">
+                    <div key={option.value} className="flex items-center">
                       <input
                         type="checkbox"
-                        id={option}
+                        id={option.value}
                         name={currentQuestion.field}
-                        value={option}
+                        value={option.value}
                         onChange={(e) => {
                           const existing = answers[currentQuestion.field] || [];
                           const newMonths = e.target.checked
-                            ? [...existing, option]
-                            : existing.filter((m: string) => m !== option);
+                            ? [...existing, option.value]
+                            : existing.filter((m: string) => m !== option.value);
                           setAnswers((prev: any) => ({ ...prev, [currentQuestion.field]: newMonths }));
                         }}
                         className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
                       />
-                      <label htmlFor={option} className="ml-2 block text-sm text-gray-900">
-                        {option}
+                      <label htmlFor={option.value} className="ml-2 block text-sm text-gray-900">
+                        {option.label}
                       </label>
                     </div>
                   ))}
