@@ -3,33 +3,46 @@
 
 import { useState } from 'react';
 
-const MONTHS = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+const questions = [
+  { id: 'temp_target', text: 'Qual a sua temperatura ideal para viajar?', type: 'number', field: 'temp_target' },
+  { id: 'budget_target', text: 'Qual o seu orçamento?', type: 'number', field: 'budget_target' },
+  { id: 'chuva_preference', text: 'Você se importa com chuva?', type: 'radio', field: 'chuva_preference', options: [{label: 'Não', value: 'pouca'}, {label: 'Sim', value: 'muita'}]},
+  { id: 'neve_preference', text: 'Você gostaria de ver neve?', type: 'radio', field: 'neve_preference', options: [{label: 'Não', value: 'pouca'}, {label: 'Sim', value: 'muita'}]},
+  { id: 'quer_montanha', text: 'Gosta de montanhas?', type: 'radio', field: 'quer_montanha', options: [{label: 'Sim', value: 'true'}, {label: 'Não', value: 'false'}] },
+  { id: 'gosta_historia', text: 'Gosta de história?', type: 'radio', field: 'gosta_historia', options: [{label: 'Sim', value: 'true'}, {label: 'Não', value: 'false'}] },
+  { id: 'months', text: 'Quais meses você prefere viajar?', type: 'checkbox', field: 'months', options: [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+  ]},
 ];
 
 export default function Home() {
+  const [answers, setAnswers] = useState<any>({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [formState, setFormState] = useState<any>({});
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleAnswer = (field: string, value: any) => {
+    setAnswers((prev: any) => ({ ...prev, [field]: value }));
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Last question answered, submit the form
+      handleSubmit({ ...answers, [field]: value });
+    }
+  };
+
+  const handleSubmit = async (finalAnswers: any) => {
     setLoading(true);
-    const formData = new FormData(event.currentTarget);
-    const temp_target = formData.get('temp_target');
-    const budget_target = formData.get('budget_target');
-
     const data = {
-      temp_target: temp_target ? parseFloat(temp_target.toString()) : null,
-      chuva_preference: formData.get('chuva_preference'),
-      neve_preference: formData.get('neve_preference'),
-      quer_montanha: formData.get('quer_montanha') === 'true',
-      gosta_historia: formData.get('gosta_historia') === 'true',
-      budget_target: budget_target ? parseFloat(budget_target.toString()) : null,
-      months: formData.getAll('months'),
+      temp_target: finalAnswers.temp_target ? parseFloat(finalAnswers.temp_target.toString()) : null,
+      chuva_preference: finalAnswers.chuva_preference,
+      neve_preference: finalAnswers.neve_preference,
+      quer_montanha: finalAnswers.quer_montanha === 'true',
+      gosta_historia: finalAnswers.gosta_historia === 'true',
+      budget_target: finalAnswers.budget_target ? parseFloat(finalAnswers.budget_target.toString()) : null,
+      months: finalAnswers.months,
     };
-    setFormState(data);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     const response = await fetch(`${apiUrl}/api/recommend/`, {
@@ -45,131 +58,86 @@ export default function Home() {
     setLoading(false);
   };
 
-  const renderComparison = (result: any) => {
-    return (
-      <div className="mt-4 text-sm text-gray-600">
-        <h4 className="font-bold mb-2">Comparação com suas preferências:</h4>
-        <ul>
-          {formState.temp_target && <li>Temperatura: {result.temp_min}°C - {result.temp_max}°C (Sua preferência: {formState.temp_target}°C)</li>}
-          {formState.budget_target && <li>Custo: {result.custo} (Seu orçamento: {formState.budget_target})</li>}
-          {formState.chuva_preference !== 'nao_importa' && <li>Chuva: {result.chuva} (Sua preferência: {formState.chuva_preference})</li>}
-          {formState.neve_preference !== 'nao_importa' && <li>Neve: {result.neve} (Sua preferência: {formState.neve_preference})</li>}
-          {formState.quer_montanha && <li>Montanha: {result.tem_montanha ? 'Sim' : 'Não'} (Sua preferência: Sim)</li>}
-          {formState.gosta_historia && <li>História: {result.tem_historia ? 'Sim' : 'Não'} (Sua preferência: Sim)</li>}
-        </ul>
-      </div>
-    )
-  }
+  const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 bg-gray-100">
-      <div className="w-full max-w-4xl">
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100">
+      <div className="w-full max-w-md">
         <header className="text-center mb-10">
           <h1 className="text-5xl font-bold text-gray-800">SmartTravel</h1>
           <p className="text-gray-600 mt-2">Encontre o destino de viagem perfeito para você</p>
         </header>
 
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex flex-col gap-6">
-              <div>
-                <label htmlFor="temp_target" className="block text-sm font-medium text-gray-700">Temperatura Desejada (°C)</label>
-                <input type="number" id="temp_target" name="temp_target" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-              </div>
-              <div>
-                <label htmlFor="budget_target" className="block text-sm font-medium text-gray-700">Orçamento</label>
-                <input type="number" id="budget_target" name="budget_target" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-              </div>
-              <div>
-                <label htmlFor="chuva_preference" className="block text-sm font-medium text-gray-700">Preferência de Chuva</label>
-                <select id="chuva_preference" name="chuva_preference" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                  <option value="nao_importa">Não Importa</option>
-                  <option value="pouca">Pouca</option>
-                  <option value="muita">Muita</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="neve_preference" className="block text-sm font-medium text-gray-700">Preferência de Neve</label>
-                <select id="neve_preference" name="neve_preference" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                  <option value="nao_importa">Não Importa</option>
-                  <option value="pouca">Pouca</option>
-                  <option value="muita">Muita</option>
-                </select>
-              </div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input id="quer_montanha" name="quer_montanha" type="checkbox" value="true" className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+        {!loading && !results.length && (
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">{currentQuestion.text}</h2>
+            <div className="flex flex-col items-center gap-4">
+              {currentQuestion.type === 'number' && (
+                <input
+                  type="number"
+                  onBlur={(e) => handleAnswer(currentQuestion.field, e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              )}
+              {currentQuestion.type === 'radio' && currentQuestion.options && currentQuestion.options.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleAnswer(currentQuestion.field, option.value)}
+                  className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700"
+                >
+                  {option.label}
+                </button>
+              ))}
+              {currentQuestion.type === 'checkbox' && currentQuestion.options && (
+                <div className="grid grid-cols-3 gap-2">
+                  {currentQuestion.options.map((option: any) => (
+                    <div key={option} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={option}
+                        name={currentQuestion.field}
+                        value={option}
+                        onChange={(e) => {
+                          const existing = answers[currentQuestion.field] || [];
+                          const newMonths = e.target.checked
+                            ? [...existing, option]
+                            : existing.filter((m: string) => m !== option);
+                          setAnswers((prev: any) => ({ ...prev, [currentQuestion.field]: newMonths }));
+                        }}
+                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      />
+                      <label htmlFor={option} className="ml-2 block text-sm text-gray-900">
+                        {option}
+                      </label>
+                    </div>
+                  ))}
+                   <button
+                    onClick={() => handleAnswer(currentQuestion.field, answers[currentQuestion.field])}
+                    className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 mt-4 col-span-3"
+                  >
+                    Próximo
+                  </button>
                 </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="quer_montanha" className="font-medium text-gray-700">Gosta de Montanhas?</label>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input id="gosta_historia" name="gosta_historia" type="checkbox" value="true" className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="gosta_historia" className="font-medium text-gray-700">Gosta de História?</label>
-                </div>
-              </div>
+              )}
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Meses de Preferência</label>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {MONTHS.map(month => (
-                  <div key={month} className="flex items-center">
-                    <input type="checkbox" id={month} name="months" value={month} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                    <label htmlFor={month} className="ml-2 block text-sm text-gray-900">{month}</label>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="md:col-span-2 text-center mt-6">
-              <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {loading ? 'Buscando...' : 'Recomendar'}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {loading && (
-          <div className="text-center mt-8">
-            <p>Carregando recomendações...</p>
           </div>
         )}
+
+        {loading && <p className="text-center">Carregando recomendações...</p>}
 
         {results.length > 0 && (
           <div className="mt-10">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Resultados</h2>
-            
-            {/* Principal Recommendation */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h3 className="text-2xl font-bold text-gray-800">Principal Recomendação: {results[0].cidade}, {results[0].pais}</h3>
-              <p className="text-gray-600 mt-2">Mês: {results[0].mes}</p>
-              <p className="text-gray-600 mt-2">{results[0].descricao}</p>
-              <p className="text-indigo-500 font-semibold mt-4">Score: {results[0].score.toFixed(2)}</p>
-              {renderComparison(results[0])}
-            </div>
-
-            {/* Other Recommendations */}
-            {results.length > 1 && (
-              <div>
-                <h3 className="text-2xl font-bold text-center text-gray-800 mb-6">Outras Recomendações</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {results.slice(1).map((result, index) => (
-                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                      <h3 className="text-xl font-bold text-gray-800">{result.cidade}, {result.pais}</h3>
-                      <p className="text-gray-600 mt-2">Mês: {result.mes}</p>
-                      <p className="text-gray-600 mt-2">{result.descricao}</p>
-                      <p className="text-indigo-500 font-semibold mt-4">Score: {result.score.toFixed(2)}</p>
-                      {renderComparison(result)}
-                    </div>
-                  ))}
+            <div className="grid grid-cols-1 gap-8">
+              {results.map((result, index) => (
+                <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-xl font-bold text-gray-800">{result.cidade}, {result.pais}</h3>
+                  <p className="text-gray-600 mt-2">Mês: {result.mes}</p>
+                  <p className="text-gray-600 mt-2">{result.descricao}</p>
+                  <p className="text-indigo-500 font-semibold mt-4">Score: {result.score.toFixed(2)}</p>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         )}
       </div>
