@@ -29,7 +29,8 @@ export default function Home() {
       months: formData.getAll('months'),
     };
 
-    const response = await fetch('/api/recommend/', {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiUrl}/api/recommend/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

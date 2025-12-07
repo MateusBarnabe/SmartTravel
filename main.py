@@ -4,11 +4,25 @@ import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 # Assuming travel_knn_assets is in a module named ml
 from travel_app.ml.travel_knn_assets import recommend_knn
 
 app = FastAPI()
+
+# CORS configuration
+origins = [
+    "http://localhost:3000",  # Allow frontend origin
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["POST"],  # Allow only POST method for the recommend endpoint
+    allow_headers=["Content-Type"],  # Allow only Content-Type header
+)
 
 logger = logging.getLogger(__name__)
 
