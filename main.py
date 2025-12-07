@@ -75,7 +75,7 @@ class RecommendPayload(BaseModel):
 def recommend_view(payload: RecommendPayload):
     results = recommend_knn(payload.dict(), top_k=10)
     if results:
-        results = sorted(results, key=lambda r: r["score"], reverse=True)[:2]
+        results = sorted(results, key=lambda r: r["score"], reverse=True)[:5]
         for item in results:
             item["descricao"] = _city_description(item.get("pais"), item.get("cidade"))
     

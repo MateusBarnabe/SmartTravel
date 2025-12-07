@@ -11,6 +11,7 @@ const MONTHS = [
 export default function Home() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [formState, setFormState] = useState<any>({});
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,6 +29,7 @@ export default function Home() {
       budget_target: budget_target ? parseFloat(budget_target.toString()) : null,
       months: formData.getAll('months'),
     };
+    setFormState(data);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     const response = await fetch(`${apiUrl}/api/recommend/`, {
@@ -42,6 +44,22 @@ export default function Home() {
     setResults(result.results);
     setLoading(false);
   };
+
+  const renderComparison = (result: any) => {
+    return (
+      <div className="mt-4 text-sm text-gray-600">
+        <h4 className="font-bold mb-2">Comparação com suas preferências:</h4>
+        <ul>
+          {formState.temp_target && <li>Temperatura: {result.temp_min}°C - {result.temp_max}°C (Sua preferência: {formState.temp_target}°C)</li>}
+          {formState.budget_target && <li>Custo: {result.custo} (Seu orçamento: {formState.budget_target})</li>}
+          {formState.chuva_preference !== 'nao_importa' && <li>Chuva: {result.chuva} (Sua preferência: {formState.chuva_preference})</li>}
+          {formState.neve_preference !== 'nao_importa' && <li>Neve: {result.neve} (Sua preferência: {formState.neve_preference})</li>}
+          {formState.quer_montanha && <li>Montanha: {result.tem_montanha ? 'Sim' : 'Não'} (Sua preferência: Sim)</li>}
+          {formState.gosta_historia && <li>História: {result.tem_historia ? 'Sim' : 'Não'} (Sua preferência: Sim)</li>}
+        </ul>
+      </div>
+    )
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-100">
@@ -125,15 +143,33 @@ export default function Home() {
         {results.length > 0 && (
           <div className="mt-10">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Resultados</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {results.map((result, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-2xl font-bold text-gray-800">{result.cidade}, {result.pais}</h3>
-                  <p className="text-gray-600 mt-2">{result.descricao}</p>
-                  <p className="text-indigo-500 font-semibold mt-4">Score: {result.score.toFixed(2)}</p>
-                </div>
-              ))}
+            
+            {/* Principal Recommendation */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h3 className="text-2xl font-bold text-gray-800">Principal Recomendação: {results[0].cidade}, {results[0].pais}</h3>
+              <p className="text-gray-600 mt-2">Mês: {results[0].mes}</p>
+              <p className="text-gray-600 mt-2">{results[0].descricao}</p>
+              <p className="text-indigo-500 font-semibold mt-4">Score: {results[0].score.toFixed(2)}</p>
+              {renderComparison(results[0])}
             </div>
+
+            {/* Other Recommendations */}
+            {results.length > 1 && (
+              <div>
+                <h3 className="text-2xl font-bold text-center text-gray-800 mb-6">Outras Recomendações</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {results.slice(1).map((result, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                      <h3 className="text-xl font-bold text-gray-800">{result.cidade}, {result.pais}</h3>
+                      <p className="text-gray-600 mt-2">Mês: {result.mes}</p>
+                      <p className="text-gray-600 mt-2">{result.descricao}</p>
+                      <p className="text-indigo-500 font-semibold mt-4">Score: {result.score.toFixed(2)}</p>
+                      {renderComparison(result)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
