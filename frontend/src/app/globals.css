@@ -1,4 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #f8fafc;
+    --surface-card: #ffffff;
+    --border-subtle: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --brand-primary: #2563eb;
+    --brand-primary-hover: #1d4ed8;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Anel de foco para acessibilidade (WCAG) */
+  :focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+  }
+}
 
 @theme static {
   --color-sand: #f7f1e6;
