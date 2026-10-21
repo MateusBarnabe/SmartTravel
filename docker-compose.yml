@@ -18,4 +18,4 @@ services:
     volumes:
       - ./frontend:/app/frontend
     environment:
-      - NEXT_PUBLIC_API_URL=http://api:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000

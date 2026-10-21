@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 import pandas as pd
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,15 +15,21 @@ app = FastAPI()
 # CORS configuration
 origins = [
     "http://localhost:3000",  # Allow frontend origin
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["POST"],  # Allow only POST method for the recommend endpoint
-    allow_headers=["Content-Type"],  # Allow only Content-Type header
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="http://localhost:3000")
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +80,18 @@ class RecommendPayload(BaseModel):
 
 @app.post("/api/recommend/")
 def recommend_view(payload: RecommendPayload):
-    results = recommend_knn(payload.dict(), top_k=10)
+    results = recommend_knn(payload.dict(), top_k=15)
+    unique_results = []
     if results:
-        results = sorted(results, key=lambda r: r["score"], reverse=True)[:5]
+        results = sorted(results, key=lambda r: r["score"], reverse=True)
+        seen = set()
         for item in results:
-            item["descricao"] = _city_description(item.get("pais"), item.get("cidade"))
-    
-    return {"results": results}
+            key = (str(item.get("pais", "")).strip().lower(), str(item.get("cidade", "")).strip().lower())
+            if key not in seen:
+                seen.add(key)
+                item["descricao"] = _city_description(item.get("pais"), item.get("cidade"))
+                unique_results.append(item)
+            if len(unique_results) >= 5:
+                break
+
+    return {"results": unique_results}
