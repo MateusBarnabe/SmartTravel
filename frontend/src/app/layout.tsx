@@ -11,14 +11,15 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
-  style: ["normal", "italic"],
 });
+
 export const metadata: Metadata = {
-  title: "SmartTravel | Descubra seu próximo destino",
-  description: "Encontre o destino de viagem ideal para o seu perfil com recomendações inteligentes.",
+  title: "SmartTravel",
+  description: "Planeje suas viagens com inteligência",
 };
 
 export default function RootLayout({
@@ -29,9 +30,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased`}
       >
-            className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased`}
         {children}
       </body>
     </html>

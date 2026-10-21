@@ -233,8 +233,6 @@ export default function Home() {
     };
 
     try {
-      // Uses internal Next.js API route first (works on Vercel and locally without CORS issues),
-      // with automatic fallback to external FastAPI if needed
       let response = await fetch('/api/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,17 +276,22 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-sand text-ink selection:bg-terra selection:text-white">
-      <header className="sticky top-0 z-20 border-b border-line bg-sand/85 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <button type="button" onClick={handleReset} className="flex items-center gap-3 text-left">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pine text-sand">
+    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* Header Sticky */}
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 py-4">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="flex items-center gap-3 text-left group focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded-xl p-1 transition"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 group-hover:bg-blue-700 transition">
               <svg
                 viewBox="0 0 24 24"
-                className="h-5 w-5"
+                className="h-6 w-6"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
@@ -298,10 +301,12 @@ export default function Home() {
               </svg>
             </span>
             <span>
-              <span className="block font-display text-xl font-semibold leading-none tracking-tight">
+              <span className="block font-[family-name:var(--font-fraunces)] text-2xl font-bold tracking-tight text-slate-900">
                 SmartTravel
               </span>
-              <span className="mt-1 block text-xs text-muted">Recomendação inteligente com KNN</span>
+              <span className="block text-xs font-medium text-slate-500">
+                Recomendação inteligente com KNN
+              </span>
             </span>
           </button>
 
@@ -309,7 +314,7 @@ export default function Home() {
             <button
               type="button"
               onClick={handleReset}
-              className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium transition hover:border-pine hover:text-pine"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-blue-600"
             >
               Nova consulta
             </button>
@@ -317,27 +322,30 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-4xl flex-col items-center px-6 py-10 md:py-16">
+      <main className="mx-auto flex max-w-4xl flex-col items-center px-4 sm:px-6 py-8 sm:py-16">
+        {/* Hero do Início */}
         {!loading && results.length === 0 && (
-          <div className="mb-10 text-center">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-terra">
+          <div className="mb-8 sm:mb-12 text-center max-w-2xl">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/80 mb-4">
               Descubra em {questions.length} passos
             </span>
-            <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
+            <h1 className="font-[family-name:var(--font-fraunces)] text-3xl sm:text-5xl font-extrabold leading-[1.15] tracking-tight text-slate-900">
               Para onde vamos na sua{' '}
-              <em className="font-medium italic text-terra">próxima viagem?</em>
+              <span className="text-blue-600 italic">próxima viagem?</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-xl text-base text-muted">
+            <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
               Nosso modelo analisa clima, orçamento, relevo e cultura em centenas de destinos mundiais para encontrar o seu match perfeito.
             </p>
           </div>
         )}
 
+        {/* Card do Questionário */}
         {!loading && results.length === 0 && (
-          <div className="w-full max-w-2xl rounded-3xl border border-line bg-surface p-6 shadow-[0_20px_50px_-24px_rgba(27,42,41,0.3)] sm:p-10">
+          <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-xl shadow-slate-200/60 transition-all">
+            {/* Header e Barra de Progresso */}
             <div className="mb-8">
-              <div className="flex items-center justify-between text-xs font-medium text-muted">
-                <span className="font-semibold uppercase tracking-wider text-pine">
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                <span className="uppercase tracking-wider text-blue-600">
                   {currentQuestion.badge}
                 </span>
                 <span>
@@ -355,21 +363,23 @@ export default function Home() {
                 {questions.map((q, i) => (
                   <span
                     key={q.id}
-                    className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                      i <= currentQuestionIndex ? 'bg-terra' : 'bg-line'
+                    className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                      i <= currentQuestionIndex ? 'bg-blue-600' : 'bg-slate-100'
                     }`}
                   />
                 ))}
               </div>
             </div>
 
-            <div key={currentQuestion.id} className="animate-rise">
-              <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
+            {/* Conteúdo da Pergunta */}
+            <div key={currentQuestion.id} className="animate-fadeIn">
+              <h2 className="font-[family-name:var(--font-fraunces)] text-2xl sm:text-3xl font-bold text-slate-900 leading-snug">
                 {currentQuestion.text}
               </h2>
-              <p className="mt-2 text-sm text-muted">{currentQuestion.subtitle}</p>
+              <p className="mt-2 text-sm text-slate-600">{currentQuestion.subtitle}</p>
 
               <div className="mt-8">
+                {/* Pergunta do Tipo Temperatura */}
                 {currentQuestion.type === 'temperature' && (
                   <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -381,26 +391,26 @@ export default function Home() {
                             type="button"
                             aria-pressed={isSelected}
                             onClick={() => setAnswers((prev) => ({ ...prev, temp_target: preset.temp }))}
-                            className={`flex flex-col items-center rounded-2xl border p-3.5 text-center transition ${
+                            className={`flex flex-col items-center rounded-2xl border p-4 text-center transition-all cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-blue-600 ${
                               isSelected
-                                ? 'border-pine bg-pine-soft'
-                                : 'border-line bg-surface hover:border-pine/40 hover:bg-sand/60'
+                                ? 'border-blue-600 bg-blue-50/70 shadow-sm ring-2 ring-blue-600/20'
+                                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                             }`}
                           >
-                            <span className="text-2xl">{preset.icon}</span>
-                            <span className="mt-1.5 text-sm font-semibold">{preset.label}</span>
-                            <span className="text-xs text-muted">{preset.desc}</span>
+                            <span className="text-3xl">{preset.icon}</span>
+                            <span className="mt-2 text-sm font-bold text-slate-900">{preset.label}</span>
+                            <span className="mt-0.5 text-xs text-slate-500">{preset.desc}</span>
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="rounded-2xl border border-line bg-sand/60 p-5">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="temp-range" className="text-sm font-medium text-muted">
+                        <label htmlFor="temp-range" className="text-sm font-semibold text-slate-700">
                           Temperatura escolhida
                         </label>
-                        <span className="font-display text-3xl font-semibold text-pine">
+                        <span className="font-[family-name:var(--font-fraunces)] text-3xl font-bold text-blue-600">
                           {answers.temp_target ?? 24}°C
                         </span>
                       </div>
@@ -414,9 +424,9 @@ export default function Home() {
                         onChange={(e) =>
                           setAnswers((prev) => ({ ...prev, temp_target: Number(e.target.value) }))
                         }
-                        className="slider mt-4 w-full cursor-pointer"
+                        className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-blue-600"
                       />
-                      <div className="mt-3 flex justify-between text-xs text-muted">
+                      <div className="mt-3 flex justify-between text-xs font-medium text-slate-500">
                         <span>-5°C (Neve)</span>
                         <span>15°C (Ameno)</span>
                         <span>25°C (Quente)</span>
@@ -427,13 +437,14 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => handleNextStep('temp_target', answers.temp_target ?? 24)}
-                      className="w-full rounded-full bg-terra py-4 text-base font-semibold text-white transition hover:bg-terra-dark"
+                      className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
                     >
                       Confirmar temperatura →
                     </button>
                   </div>
                 )}
 
+                {/* Pergunta do Tipo Orçamento */}
                 {currentQuestion.type === 'budget' && (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -447,26 +458,26 @@ export default function Home() {
                             onClick={() =>
                               setAnswers((prev) => ({ ...prev, budget_target: preset.amount }))
                             }
-                            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition ${
+                            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition-all cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-blue-600 ${
                               isSelected
-                                ? 'border-pine bg-pine-soft'
-                                : 'border-line bg-surface hover:border-pine/40 hover:bg-sand/60'
+                                ? 'border-blue-600 bg-blue-50/70 shadow-sm ring-2 ring-blue-600/20'
+                                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                             }`}
                           >
-                            <span className="text-2xl">{preset.icon}</span>
-                            <span className="mt-2 text-sm font-semibold">{preset.label}</span>
-                            <span className="mt-1 text-xs text-muted">{preset.desc}</span>
+                            <span className="text-3xl">{preset.icon}</span>
+                            <span className="mt-2 text-sm font-bold text-slate-900">{preset.label}</span>
+                            <span className="mt-1 text-xs text-slate-500">{preset.desc}</span>
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="rounded-2xl border border-line bg-sand/60 p-5">
-                      <label htmlFor="budget-input" className="block text-sm font-medium text-muted">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                      <label htmlFor="budget-input" className="block text-sm font-semibold text-slate-700">
                         Ou digite o valor aproximado (R$)
                       </label>
                       <div className="mt-2 flex items-center gap-3">
-                        <span className="text-lg font-semibold text-muted">R$</span>
+                        <span className="text-lg font-bold text-slate-400">R$</span>
                         <input
                           id="budget-input"
                           type="number"
@@ -476,7 +487,7 @@ export default function Home() {
                           onChange={(e) =>
                             setAnswers((prev) => ({ ...prev, budget_target: e.target.value }))
                           }
-                          className="w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-lg font-semibold focus:border-pine"
+                          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-lg font-bold text-slate-900 shadow-sm transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -484,15 +495,16 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => handleNextStep('budget_target', answers.budget_target ?? 2500)}
-                      className="w-full rounded-full bg-terra py-4 text-base font-semibold text-white transition hover:bg-terra-dark"
+                      className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
                     >
                       Confirmar orçamento →
                     </button>
                   </div>
                 )}
 
+                {/* Pergunta do Tipo Radio */}
                 {currentQuestion.type === 'radio' && currentQuestion.options && (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-3.5">
                     {currentQuestion.options.map((option) => {
                       const isSelected = answers[currentQuestion.field] === option.value;
                       return (
@@ -501,23 +513,23 @@ export default function Home() {
                           type="button"
                           aria-pressed={isSelected}
                           onClick={() => handleNextStep(currentQuestion.field, option.value)}
-                          className={`group flex items-center gap-4 rounded-2xl border p-5 text-left transition ${
+                          className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition-all cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-blue-600 ${
                             isSelected
-                              ? 'border-pine bg-pine-soft'
-                              : 'border-line bg-surface hover:border-pine/50 hover:bg-sand/60'
+                              ? 'border-blue-600 bg-blue-50/70 shadow-sm ring-2 ring-blue-600/20'
+                              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                           }`}
                         >
-                          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-sand text-3xl">
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl group-hover:scale-105 transition-transform">
                             {option.icon}
                           </span>
                           <span className="flex-1">
-                            <span className="block text-base font-semibold">{option.label}</span>
+                            <span className="block text-base font-bold text-slate-900">{option.label}</span>
                             {option.subtitle && (
-                              <span className="mt-1 block text-sm text-muted">{option.subtitle}</span>
+                              <span className="mt-0.5 block text-xs text-slate-500">{option.subtitle}</span>
                             )}
                           </span>
                           <span
-                            className="text-muted transition group-hover:translate-x-1 group-hover:text-terra"
+                            className="text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-blue-600 font-bold"
                             aria-hidden="true"
                           >
                             →
@@ -528,10 +540,11 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Pergunta do Tipo Checkbox (Meses) */}
                 {currentQuestion.type === 'checkbox' && currentQuestion.options && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted">
+                      <span className="text-xs font-medium text-slate-500">
                         {(answers.months || []).length === 0
                           ? 'Nenhum mês específico selecionado (busca em todos os meses)'
                           : `${(answers.months || []).length} mês(es) selecionado(s)`}
@@ -547,7 +560,7 @@ export default function Home() {
                                 : currentQuestion.options!.map((o) => o.value),
                           }))
                         }
-                        className="text-xs font-semibold text-pine underline-offset-4 hover:underline"
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline-offset-2 hover:underline cursor-pointer"
                       >
                         {(answers.months || []).length === 12 ? 'Limpar seleção' : 'Selecionar todos'}
                       </button>
@@ -562,10 +575,10 @@ export default function Home() {
                             type="button"
                             aria-pressed={checked}
                             onClick={() => toggleMonth(option.value)}
-                            className={`flex items-center justify-center gap-1.5 rounded-xl border px-3 py-3 text-sm font-medium transition ${
+                            className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all cursor-pointer active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-blue-600 ${
                               checked
-                                ? 'border-pine bg-pine text-white'
-                                : 'border-line bg-surface hover:border-pine/40 hover:bg-sand/60'
+                                ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                             }`}
                           >
                             {checked && <span aria-hidden="true">✓</span>}
@@ -578,7 +591,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => handleNextStep('months', answers.months || [])}
-                      className="w-full rounded-full bg-terra py-4 text-base font-semibold text-white transition hover:bg-terra-dark"
+                      className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
                     >
                       Descobrir meus destinos ideais →
                     </button>
@@ -587,22 +600,24 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Botão de Voltar Passo */}
             {currentQuestionIndex > 0 && (
-              <div className="mt-8 border-t border-line pt-4">
+              <div className="mt-8 border-t border-slate-100 pt-4">
                 <button
                   type="button"
                   onClick={handleBackStep}
-                  className="text-sm font-medium text-muted transition hover:text-ink"
+                  className="text-sm font-semibold text-slate-500 transition hover:text-slate-900 cursor-pointer"
                 >
                   ← Voltar para a pergunta anterior
                 </button>
               </div>
             )}
 
+            {/* Alerta de Erro */}
             {error && (
               <div
                 role="alert"
-                className="mt-4 rounded-xl border border-terra/40 bg-terra/10 p-4 text-sm text-terra-dark"
+                className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700"
               >
                 {error}
               </div>
@@ -610,31 +625,33 @@ export default function Home() {
           </div>
         )}
 
+        {/* Loading State */}
         {loading && (
-          <div role="status" className="my-20 flex flex-col items-center justify-center text-center">
-            <div className="h-14 w-14 animate-spin rounded-full border-4 border-line border-t-terra" />
-            <h3 className="mt-6 font-display text-2xl font-semibold">
+          <div role="status" className="my-16 flex flex-col items-center justify-center text-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+            <h3 className="mt-6 font-[family-name:var(--font-fraunces)] text-2xl font-bold text-slate-900">
               Calculando os melhores destinos para o seu perfil...
             </h3>
-            <p className="mt-2 text-sm text-muted">
+            <p className="mt-2 text-sm text-slate-500">
               Comparando clima, custo e atrações com nosso modelo KNN.
             </p>
           </div>
         )}
 
+        {/* Resultados */}
         {!loading && results.length > 0 && (
           <div className="w-full space-y-10">
-            <div className="text-center">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-terra">
+            <div className="text-center max-w-2xl mx-auto">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-200/80 mb-3">
                 Recomendações prontas
               </span>
-              <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+              <h2 className="font-[family-name:var(--font-fraunces)] text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
                 Seus melhores destinos
               </h2>
-              <p className="mt-3 text-sm text-muted">
+              <p className="mt-3 text-sm sm:text-base text-slate-600">
                 Ordenados por compatibilidade com a temperatura de{' '}
-                <strong className="text-ink">{answers.temp_target}°C</strong> e orçamento de{' '}
-                <strong className="text-ink">R$ {answers.budget_target}</strong>.
+                <strong className="text-slate-900 font-bold">{answers.temp_target}°C</strong> e orçamento de{' '}
+                <strong className="text-slate-900 font-bold">R$ {answers.budget_target}</strong>.
               </p>
             </div>
 
@@ -642,99 +659,104 @@ export default function Home() {
               {results.map((result, index) => {
                 const matchPercent = Math.min(99, Math.max(55, Math.round(result.score * 100 + 35)));
                 const isTopMatch = index === 0;
-                const chip = isTopMatch
-                  ? 'border-white/20 bg-white/10 text-sand'
-                  : 'border-line bg-sand text-ink';
-                const ringColor = isTopMatch ? '#e8875f' : '#c4552d';
-                const ringTrack = isTopMatch ? 'rgba(255,255,255,0.18)' : '#e5dccb';
+
+                const chipStyle = isTopMatch
+                  ? 'border-white/20 bg-white/10 text-white'
+                  : 'border-slate-200 bg-slate-100 text-slate-700';
+
+                const ringColor = isTopMatch ? '#38bdf8' : '#2563eb';
+                const ringTrack = isTopMatch ? 'rgba(255,255,255,0.15)' : '#e2e8f0';
 
                 return (
                   <article
                     key={`${result.cidade}-${result.mes}-${index}`}
-                    className={`overflow-hidden rounded-3xl border p-6 transition sm:p-8 ${
+                    className={`overflow-hidden rounded-3xl border p-6 sm:p-8 transition-all hover:shadow-lg ${
                       isTopMatch
-                        ? 'border-pine bg-pine text-sand shadow-[0_24px_50px_-24px_rgba(31,79,76,0.6)]'
-                        : 'border-line bg-surface hover:border-pine/30'
+                        ? 'border-blue-600 bg-gradient-to-br from-blue-900 to-slate-900 text-white shadow-xl shadow-blue-950/20'
+                        : 'border-slate-200 bg-white text-slate-900 shadow-sm'
                     }`}
                   >
                     {isTopMatch && (
-                      <span className="mb-4 inline-block rounded-full bg-terra px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-white">
-                        Melhor opção para você
+                      <span className="mb-4 inline-block rounded-full bg-blue-500 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
+                        ⭐ Melhor opção para você
                       </span>
                     )}
 
-                    <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+                    <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-start">
                       <div>
-                        <p className={`text-sm font-semibold ${isTopMatch ? 'text-sand/70' : 'text-muted'}`}>
-                          #{index + 1}
+                        <p className={`text-xs font-bold ${isTopMatch ? 'text-blue-300' : 'text-slate-400'}`}>
+                          #{index + 1} RECOMENDAÇÃO
                         </p>
-                        <h3 className="mt-1 font-display text-3xl font-semibold leading-tight sm:text-4xl">
+                        <h3 className="mt-1 font-[family-name:var(--font-fraunces)] text-3xl sm:text-4xl font-extrabold leading-tight">
                           {result.cidade}
                           <span
-                            className={`block text-lg font-normal italic sm:text-xl ${
-                              isTopMatch ? 'text-sand/70' : 'text-muted'
+                            className={`block text-lg sm:text-xl font-normal italic ${
+                              isTopMatch ? 'text-slate-300' : 'text-slate-500'
                             }`}
                           >
                             {result.pais}
                           </span>
                         </h3>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chip}`}>
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chipStyle}`}>
                             Melhor mês: <strong>{result.mes}</strong>
                           </span>
                           {result.temp_min !== undefined && result.temp_max !== undefined && (
-                            <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chip}`}>
+                            <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chipStyle}`}>
                               {result.temp_min}°C a {result.temp_max}°C
                             </span>
                           )}
                           {result.custo && (
-                            <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chip}`}>
+                            <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chipStyle}`}>
                               Custo: {result.custo}
                             </span>
                           )}
                           {result.tem_historia &&
                             result.tem_historia.toLowerCase().startsWith('s') && (
-                              <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chip}`}>
+                              <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chipStyle}`}>
                                 Histórico
                               </span>
                             )}
                           {result.tem_montanha &&
                             result.tem_montanha.toLowerCase().startsWith('s') && (
-                              <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chip}`}>
+                              <span className={`rounded-full border px-3 py-1 text-xs font-medium ${chipStyle}`}>
                                 Montanha
                               </span>
                             )}
                         </div>
                       </div>
 
+                      {/* Anel de Match / Score */}
                       <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:gap-2">
                         <div
                           role="img"
                           aria-label={`Compatibilidade de ${matchPercent}%`}
-                          className="flex h-20 w-20 items-center justify-center rounded-full"
+                          className="flex h-20 w-20 items-center justify-center rounded-full p-1"
                           style={{
                             background: `conic-gradient(${ringColor} ${matchPercent}%, ${ringTrack} 0)`,
                           }}
                         >
                           <div
-                            className={`flex h-[60px] w-[60px] items-center justify-center rounded-full ${
-                              isTopMatch ? 'bg-pine' : 'bg-surface'
+                            className={`flex h-[68px] w-[68px] items-center justify-center rounded-full ${
+                              isTopMatch ? 'bg-slate-900' : 'bg-white'
                             }`}
                           >
-                            <span className="font-display text-xl font-semibold">{matchPercent}%</span>
+                            <span className="font-[family-name:var(--font-fraunces)] text-xl font-bold">
+                              {matchPercent}%
+                            </span>
                           </div>
                         </div>
                         <div className="text-xs sm:text-center">
-                          <span className="block font-medium">Compatibilidade</span>
-                          <span className="block opacity-60">Score KNN: {result.score.toFixed(2)}</span>
+                          <span className="block font-semibold">Compatibilidade</span>
+                          <span className="block opacity-60">Score: {result.score.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
 
                     <p
-                      className={`mt-6 border-t pt-4 text-sm leading-relaxed sm:text-base ${
-                        isTopMatch ? 'border-white/15 text-sand/90' : 'border-line text-muted'
+                      className={`mt-6 border-t pt-4 text-sm sm:text-base leading-relaxed ${
+                        isTopMatch ? 'border-white/10 text-slate-200' : 'border-slate-100 text-slate-600'
                       }`}
                     >
                       {buildFallbackDescription(result)}
@@ -744,11 +766,11 @@ export default function Home() {
               })}
             </div>
 
-            <div className="flex justify-center pt-2">
+            <div className="flex justify-center pt-4">
               <button
                 type="button"
                 onClick={handleReset}
-                className="rounded-full bg-terra px-8 py-4 text-base font-semibold text-white transition hover:bg-terra-dark"
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-8 text-base font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
               >
                 ↻ Refazer com novas preferências
               </button>
