@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme static {
+  --color-sand: #f7f1e6;
+  --color-surface: #fffdf8;
+  --color-ink: #1b2a29;
+  --color-muted: #5d6a67;
+  --color-line: #e5dccb;
+  --color-terra: #c4552d;
+  --color-terra-dark: #a64420;
+  --color-pine: #1f4f4c;
+  --color-pine-soft: #e2eeea;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-fraunces);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-sand font-sans text-ink antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-pine);
+  outline-offset: 2px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-rise {
+  animation: rise 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation: none;
+  }
+}
+
+input[type="range"].slider {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--color-line);
+}
+
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 24px;
+  width: 24px;
+  border-radius: 9999px;
+  background: var(--color-terra);
+  border: 3px solid var(--color-surface);
+  box-shadow: 0 1px 4px rgba(27, 42, 41, 0.35);
+  cursor: pointer;
+}
+
+input[type="range"].slider::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--color-line);
+}
+
+input[type="range"].slider::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  border-radius: 9999px;
+  background: var(--color-terra);
+  border: 3px solid var(--color-surface);
+  box-shadow: 0 1px 4px rgba(27, 42, 41, 0.35);
+  cursor: pointer;
 }
